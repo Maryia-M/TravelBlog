@@ -1,5 +1,7 @@
 package com.example.travelblog;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -22,6 +24,8 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 public class BlogDetailsActivity extends AppCompatActivity {
+    private static final String EXTRAS_BLOG = "EXTRAS_BLOG";
+
     private TextView textTitle;
     private TextView textDate;
     private TextView textAuthor;
@@ -39,17 +43,7 @@ public class BlogDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_blog_details);
 
         imageMain = findViewById(R.id.imageMain);
-        /*Glide.with(this)
-                .load(IMAGE_URL)
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(imageMain);*/
-
         imageAvatar = findViewById(R.id.imageAvatar);
-        /*Glide.with(this)
-                .load(AVATAR_URL)
-                .transform(new CircleCrop())
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(imageAvatar);*/
 
         textTitle = findViewById(R.id.textTitle);
         textDate = findViewById(R.id.textDate);
@@ -63,36 +57,18 @@ public class BlogDetailsActivity extends AppCompatActivity {
         ImageView imageBack = findViewById(R.id.imageBack);
         imageBack.setOnClickListener(v -> finish());
 
-        //start data loading
-        loadData();
+        //show data
+        showData(getIntent()
+                    .getExtras()
+                    .getParcelable(EXTRAS_BLOG));
     }
 
-    private void loadData(){
-        BlogHttpClient.INSTANCE.loadBlogArticles(new BlogArticlesCallback(){
-
-            @Override
-            public void onSuccess(List<Blog> blogList) {
-                runOnUiThread(() -> showData(blogList.get(0))); // 4
-            }
-
-            @Override
-            public void onError() {
-                runOnUiThread(() -> showErrorSnackbar());
-            }
-        });
+    public static void startBlogDetailsActivity(Activity activity, Blog blog) {
+        Intent intent = new Intent(activity, BlogDetailsActivity.class);
+        intent.putExtra(EXTRAS_BLOG, blog);
+        activity.startActivity(intent);
     }
 
-    private void showErrorSnackbar() {
-        View rootView = findViewById(android.R.id.content);
-        Snackbar snackbar = Snackbar.make(rootView,
-                "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
-        snackbar.setActionTextColor(getResources().getColor(R.color.orange500));
-        snackbar.setAction("Retry", v -> {
-            loadData();
-            snackbar.dismiss();
-        });
-        snackbar.show();
-    }
 
     private void showData(Blog blog) {
         ratingBar.setVisibility(View.VISIBLE);
@@ -105,11 +81,11 @@ public class BlogDetailsActivity extends AppCompatActivity {
         textDescription.setText(Html.fromHtml(blog.getDescription()));
         ratingBar.setRating(blog.getRating());
         Glide.with(this)
-                .load(blog.getImage())
+                .load(blog.getImageURL())
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(imageMain);
         Glide.with(this)
-                .load(blog.getAuthor().getAvatar())
+                .load(blog.getAuthor().getAvatarURL())
                 .transform(new CircleCrop())
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(imageAvatar);

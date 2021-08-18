@@ -18,7 +18,14 @@ import com.example.travelblog.http.Blog;
 
 import com.example.travelblog.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
+
+    private List<Blog> originalList = new ArrayList<>();
+
     public interface OnItemClickListener { // 1
         void onItemClicked(Blog blog);
     }
@@ -84,5 +91,30 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
 
         // 4
     }
+
+    public void sortByTitle(){
+        Collections.sort(originalList, (o1,o2) -> o1.getTitle().compareTo(o2.getTitle()));
+        submitList(originalList);
+    }
+
+    public void sortByDate(){
+        Collections.sort(originalList, (o1,o2) -> o1.getDateMillis().compareTo(o2.getDateMillis()));
+        submitList(originalList);
+    }
+
+    public void filter(String query) {
+        List<Blog> filteredList = new ArrayList<>();
+        for (Blog blog : originalList) { // 1
+            if (blog.getTitle().toLowerCase().contains(query.toLowerCase())) { // 2
+                filteredList.add(blog);
+            }
+        }
+        submitList(filteredList); // 3
+    }
+
+    public void setData(List<Blog> blogList){
+        originalList = blogList;
+    }
+
 
 }

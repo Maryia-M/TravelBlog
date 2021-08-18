@@ -26,7 +26,7 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
 
     private List<Blog> originalList = new ArrayList<>();
 
-    public interface OnItemClickListener { // 1
+    public interface OnItemClickListener {
         void onItemClicked(Blog blog);
     }
 
@@ -89,27 +89,28 @@ public class MainAdapter extends ListAdapter<Blog, MainAdapter.MainViewHolder> {
                     .into(imageAvatar);
         }
 
-        // 4
     }
 
     public void sortByTitle(){
         Collections.sort(originalList, (o1,o2) -> o1.getTitle().compareTo(o2.getTitle()));
-        submitList(originalList);
+        List<Blog> currentList = new ArrayList<Blog>(originalList);
+        submitList(currentList);
     }
 
     public void sortByDate(){
         Collections.sort(originalList, (o1,o2) -> o1.getDateMillis().compareTo(o2.getDateMillis()));
-        submitList(originalList);
+        List<Blog> currentList = new ArrayList<Blog>(originalList);
+        submitList(currentList);
     }
 
     public void filter(String query) {
         List<Blog> filteredList = new ArrayList<>();
-        for (Blog blog : originalList) { // 1
-            if (blog.getTitle().toLowerCase().contains(query.toLowerCase())) { // 2
+        for (Blog blog : originalList) {
+            if (blog.getTitle().toLowerCase().contains(query.toLowerCase())) {
                 filteredList.add(blog);
             }
         }
-        submitList(filteredList); // 3
+        submitList(filteredList);
     }
 
     public void setData(List<Blog> blogList){

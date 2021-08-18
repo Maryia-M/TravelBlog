@@ -27,6 +27,11 @@ public class Author implements Parcelable {
         }
     };
 
+    public Author(String name, String avatar) {
+        this.name = name;
+        this.avatar = avatar;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

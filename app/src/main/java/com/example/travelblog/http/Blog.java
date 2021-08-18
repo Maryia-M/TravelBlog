@@ -5,15 +5,22 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.room.Embedded;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Objects;
 
+@Entity
 public class Blog implements Parcelable {
-
+    @PrimaryKey
+    @NonNull
     private String id;
+    @Embedded
     private Author author;
     private String title;
     private String date;
@@ -23,7 +30,7 @@ public class Blog implements Parcelable {
     private float rating;
 
     private static final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("MMMM dd, yyyy"); // 1
+            new SimpleDateFormat("MMMM dd, yyyy");
 
 
     protected Blog(Parcel in) {
@@ -48,6 +55,17 @@ public class Blog implements Parcelable {
             return new Blog[size];
         }
     };
+
+    public Blog(String id, Author author, String title, String date, String image, String description, int views, float rating) {
+        this.id = id;
+        this.author = author;
+        this.title = title;
+        this.date = date;
+        this.image = image;
+        this.description = description;
+        this.views = views;
+        this.rating = rating;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -86,7 +104,7 @@ public class Blog implements Parcelable {
 
     public Long getDateMillis(){
         try {
-            Date date = dateFormat.parse(getDate()); // 2
+            Date date = dateFormat.parse(getDate());
             return date != null ? date.getTime() : null;
         } catch (ParseException e) {
             e.printStackTrace();

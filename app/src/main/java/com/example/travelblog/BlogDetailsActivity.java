@@ -78,7 +78,7 @@ public class BlogDetailsActivity extends AppCompatActivity {
         textAuthor.setText(blog.getAuthor().getName());
         textRating.setText(String.valueOf(blog.getRating()));
         textViews.setText(String.format("(%d views)", blog.getViews()));
-        textDescription.setText(Html.fromHtml(blog.getDescription()));
+        textDescription.setText(Html.fromHtml(blog.getDescription(), Html.FROM_HTML_MODE_LEGACY));
         ratingBar.setRating(blog.getRating());
         Glide.with(this)
                 .load(blog.getImageURL())

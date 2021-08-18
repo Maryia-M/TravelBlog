@@ -13,9 +13,14 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.example.travelblog.adapter.MainAdapter;
+import com.example.travelblog.database.AppDatabase;
+import com.example.travelblog.database.BlogDAO;
+import com.example.travelblog.database.DatabaseProvider;
 import com.example.travelblog.http.Blog;
 import com.example.travelblog.http.BlogArticlesCallback;
 import com.example.travelblog.http.BlogHttpClient;
+import com.example.travelblog.repository.BlogRepository;
+import com.example.travelblog.repository.DataFromNetworkCallback;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -27,17 +32,20 @@ public class MainActivity extends AppCompatActivity {
     private MainAdapter mainAdapter;
     private SwipeRefreshLayout refreshLayout;
     private MaterialToolbar toolbar;
+    private BlogRepository repository;
 
-    private static final int SORT_TITLE = 0; // 1
-    private static final int SORT_DATE = 1; // 1
+    private static final int SORT_TITLE = 0;
+    private static final int SORT_DATE = 1;
 
-    private int currentSort = SORT_DATE; // 2
+    private int currentSort = SORT_DATE;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        repository = new BlogRepository(getApplicationContext());
 
         mainAdapter = new MainAdapter(blog -> BlogDetailsActivity.startBlogDetailsActivity(this, blog));
 
@@ -69,22 +77,29 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(mainAdapter);
 
         refreshLayout = findViewById(R.id.refresh);
-        refreshLayout.setOnRefreshListener(this::loadData);
+        refreshLayout.setOnRefreshListener(this::loadDataFromNetwork);
 
-        loadData();
+        loadDataFromDatabase();
+        loadDataFromNetwork();
     }
 
-    private void loadData() {
+    private void loadDataFromDatabase() {
+        repository.loadDataFromDatabase(blogList -> runOnUiThread(() -> {
+            showData(blogList);
+        }));
+    }
+
+    private void loadDataFromNetwork(){
         refreshLayout.setRefreshing(true);
-        BlogHttpClient.INSTANCE.loadBlogArticles(new BlogArticlesCallback() {
+        repository.loadDataFromNetwork(new DataFromNetworkCallback() {
             @Override
             public void onSuccess(List<Blog> blogList) {
-                runOnUiThread(() -> {
+                runOnUiThread(() ->{
+                    showData(blogList);
                     refreshLayout.setRefreshing(false);
-                    mainAdapter.setData(blogList);
-                    sortData();
                 });
             }
+
             @Override
             public void onError() {
                 runOnUiThread(() -> {
@@ -94,12 +109,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void showData(List<Blog> blogList){
+        mainAdapter.setData(blogList);
+        sortData();
+    }
+
+
     private void showErrorSnackbar() {
         View rootView = findViewById(android.R.id.content);
         Snackbar snackbar = Snackbar.make(rootView, "Error during loading blog articles", Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(getResources().getColor(R.color.orange500));
         snackbar.setAction("Retry", v -> {
-            loadData();
+            loadDataFromNetwork();
             snackbar.dismiss();
         });
         snackbar.show();
